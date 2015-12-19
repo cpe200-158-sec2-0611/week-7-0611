@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -12,6 +12,7 @@ namespace twozerofoureight
         public const int RIGHT = 1;
         public const int UP = 2;
         public const int DOWN = 3;
+        public const int CHECK = 4;
 
         public TwoZeroFourEightController()
         {
@@ -35,6 +36,9 @@ namespace twozerofoureight
                         break;
                     case DOWN:
                         m.PerformDown();
+                        break;
+                    case CHECK:
+                        m.EndingChek();
                         break;
                 }
 
