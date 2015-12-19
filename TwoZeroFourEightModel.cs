@@ -12,6 +12,7 @@ namespace twozerofoureight
         protected int[,] board;
         protected Random rand;
         protected int score;
+        protected bool isEnd = false;
 
         public TwoZeroFourEightModel() : this(4)
         {
@@ -21,6 +22,11 @@ namespace twozerofoureight
         public int Score
         {
             get { return score; }
+        }
+        
+        public bool IsEnd
+        {
+            get { return isEnd; }
         }
 
         public int[,] GetBoard()
@@ -61,6 +67,7 @@ namespace twozerofoureight
 
         public void PerformDown()
         {
+            bool moved = false;
             int[] buffer;
             int pos;
             int[] rangeX = Enumerable.Range(0, boardSize).ToArray();
@@ -112,8 +119,65 @@ namespace twozerofoureight
             NotifyAll();
         }
 
+        public void PerformDown()
+        {
+            bool moved = false;
+            int[] buffer;
+            int pos;
+            int[] rangeX = Enumerable.Range(0, boardSize).ToArray();
+            int[] rangeY = Enumerable.Range(0, boardSize).ToArray();
+            Array.Reverse(rangeY);
+            foreach (int i in rangeX)
+            {
+                pos = 0;
+                buffer = new int[4];
+                foreach (int k in rangeX)
+                {
+                    buffer[k] = 0;
+                }
+                //shift left
+                foreach (int j in rangeY)
+                {
+                    if (board[j, i] != 0)
+                    {
+                        buffer[pos] = board[j, i];
+                        pos++;
+                    }
+                }
+                // check duplicate
+                foreach (int j in rangeX)
+                {
+                    if (j > 0 && buffer[j] != 0 && buffer[j] == buffer[j - 1])
+                    {
+                        buffer[j - 1] *= 2;
+                        buffer[j] = 0;
+                        moved = true;
+                    }
+                }
+                // shift left again
+                pos = 3;
+                foreach (int j in rangeX)
+                {
+                    if (buffer[j] != 0)
+                    {
+                        if (board[pos, i] != buffer[j]) moved=true;
+                        board[pos, i] = buffer[j];
+                        pos--;   
+                    }
+                }
+                // copy back
+                for (int k = pos; k != -1; k--)
+                {
+                    board[k, i] = 0;
+                }
+            }
+            if (moved) board = Random(board);
+            NotifyAll();
+        }
+
         public void PerformUp()
         {
+            bool moved = false;
             int[] buffer;
             int pos;
 
@@ -142,6 +206,7 @@ namespace twozerofoureight
                     {
                         buffer[j - 1] *= 2;
                         buffer[j] = 0;
+                        moved = true;
                     }
                 }
                 // shift left again
@@ -150,6 +215,7 @@ namespace twozerofoureight
                 {
                     if (buffer[j] != 0)
                     {
+                        if (board[pos, i] != buffer[j]) moved = true;
                         board[pos, i] = buffer[j];
                         pos++;
                     }
@@ -160,12 +226,13 @@ namespace twozerofoureight
                     board[k, i] = 0;
                 }
             }
-            board = Random(board);
+            if (moved) board = Random(board);
             NotifyAll();
         }
 
         public void PerformRight()
         {
+            bool moved = false;
             int[] buffer;
             int pos;
 
@@ -196,6 +263,7 @@ namespace twozerofoureight
                     {
                         buffer[j - 1] *= 2;
                         buffer[j] = 0;
+                        moved = true;
                     }
                 }
                 // shift left again
@@ -204,6 +272,7 @@ namespace twozerofoureight
                 {
                     if (buffer[j] != 0)
                     {
+                        if (board[i, pos] != buffer[j]) moved = true;
                         board[i, pos] = buffer[j];
                         pos--;
                     }
@@ -214,12 +283,13 @@ namespace twozerofoureight
                     board[i, k] = 0;
                 }
             }
-            board = Random(board);
+            if (moved) board = Random(board);
             NotifyAll();
         }
 
         public void PerformLeft()
         {
+            bool moved = false;
             int[] buffer;
             int pos;
             int[] range = Enumerable.Range(0, boardSize).ToArray();
@@ -247,6 +317,7 @@ namespace twozerofoureight
                     {
                         buffer[j - 1] *= 2;
                         buffer[j] = 0;
+                        moved = true;
                     }
                 }
                 // shift left again
@@ -255,6 +326,7 @@ namespace twozerofoureight
                 {
                     if (buffer[j] != 0)
                     {
+                        if (board[i, pos] != buffer[j]) moved = true;
                         board[i, pos] = buffer[j];
                         pos++;
                     }
@@ -264,8 +336,31 @@ namespace twozerofoureight
                     board[i, k] = 0;
                 }
             }
-            board = Random(board);
+            if(moved) board = Random(board);
             NotifyAll();
         }
+        
+        public void EndingCheck()
+        {
+            if (!isEnd)
+            {
+                for (int i = 0; i != boardSize; i++)
+                    if (board[i, 0] != board[i, 1] && board[i, 1] != board[i, 2] && board[i, 2] != board[i, 3])
+                    {
+                        if (board[0, i] != board[1, i] && board[1, i] != board[2, i] && board[2, i] != board[3, i])
+                        {
+                            if (i == boardSize - 1 && board[i, 0] != board[i, 1] && board[i, 1] != board[i, 2] && board[i, 2] != board[i, 3] && board[0, i] != board[1, i] && board[1, i] != board[2, i] && board[2, i] != board[3, i])
+                            {
+                                isEnd = true;            
+                                break;
+                            }
+                            else continue;
+                        }
+                        else break;
+                    }
+                    else break;
+            }
+        }
+        
     }
 }
